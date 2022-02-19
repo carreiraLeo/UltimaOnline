@@ -1,0 +1,39 @@
+function Skill_Cartography(){
+	TextWindow.Clear();
+	TextWindow.Open();
+	TextWindow.Print('1 - Faça o primeiro mapa manual. \n2 - Deixe o menu/gump aberto.');
+	TextWindow.Print('3 - Selecione o bau com Blank Map. \n4 - Selecione a lixeira.');
+	Orion.Wait(2000);
+	
+	Orion.CharPrint('self', '0x0035', 'Selecione o bau com Blank Map');
+	Orion.WaitForAddObject(Orion.AddObject('recurso'));
+	Orion.CharPrint('self', '0x0035', 'Selecione a lixeira');
+	Orion.WaitForAddObject(Orion.AddObject('lixeira'));
+	
+	while(Orion.SkillValue('Cartography', 'real')<1000){
+		if(Orion.Count('0x14EB', '0x0000', 'backpack')){
+			for(var i=0; i<10; i++){
+				Orion.ClearJournal();
+				Orion.WaitForGump(1500);
+				if ((Orion.GetGump('last') !== null) && (!Orion.GetGump('last').Replayed())){
+					Orion.GetGump('last').Select(Orion.CreateGumpHook(5008));
+					Orion.Wait(100);
+				}
+				Orion.WaitJournal('Voce pos|falhou', Orion.Now(), Orion.Now()+3000);
+			}
+		}
+				
+		if(Orion.Count('0x14EB', '0x0000', 'backpack')){
+			while(Orion.Count('0x14EB', '0x0000', 'backpack')){
+				Orion.MoveItemType('0x14EB', '0x0000', 'backpack', '1', 'lixeira');
+				Orion.Wait(500);
+			}
+		}
+	
+		Orion.UseObject('recurso');
+		for(var i=0; i<10; i++){
+			Orion.MoveItemType('0x14EB', '0x0000', 'recurso', '1', 'backpack');
+			Orion.Wait(700);
+		}
+	}
+}
