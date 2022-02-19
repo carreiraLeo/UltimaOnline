@@ -1,0 +1,10 @@
+function Skill_ArmsLore(){
+	Orion.CharPrint('self', '0x0035', 'Selecione a arma');
+	Orion.WaitForAddObject(Orion.AddObject('arma'));
+	
+	while(Orion.SkillValue('Arms Lore', 'real')<1000){
+		Orion.ClearJournal();
+		Orion.UseSkill('Arms Lore', 'arma');
+		Orion.WaitJournal('Ataque|Voce nao', Orion.Now(), Orion.Now()+3000);
+	}
+}
