@@ -1,0 +1,10 @@
+function Skill_ItemIdentification(){
+	Orion.CharPrint('self', '0x0035', 'Selecione o objeto');
+	Orion.WaitForAddObject(Orion.AddObject('objeto'));
+	
+	while(Orion.SkillValue('Item Identification', 'real')<1000){
+		Orion.ClearJournal();
+		Orion.UseSkill('Item Identification', 'objeto');
+		Orion.WaitJournal('feito|Voce nao', Orion.Now(), Orion.Now()+3000);
+	}
+}
