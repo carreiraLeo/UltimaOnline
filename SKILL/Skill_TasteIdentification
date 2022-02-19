@@ -1,0 +1,10 @@
+function Skill_TasteIdentification(){
+	Orion.CharPrint('self', '0x0035', 'Selecione uma comida');
+	Orion.WaitForAddObject(Orion.AddObject('objeto'));
+	
+	while(Orion.SkillValue('Taste Identification', 'real')<1000){
+		Orion.ClearJournal();
+		Orion.UseSkill('Taste Identification', 'objeto');
+		Orion.WaitJournal('Voce nao', Orion.Now(), Orion.Now()+3000);
+	}
+}
