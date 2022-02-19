@@ -1,0 +1,10 @@
+function Skill_Begging(){
+	Orion.CharPrint('self', '0x0035', 'Selecione o vendor');
+	Orion.WaitForAddObject(Orion.AddObject('vendor'));
+	
+	while(Orion.SkillValue('Begging', 'real')<1000){
+		Orion.ClearJournal();
+		Orion.UseSkill('Begging', 'vendor');
+		Orion.WaitJournal('Parece|Sinto pena', Orion.Now(), Orion.Now()+8000);
+	}
+}
