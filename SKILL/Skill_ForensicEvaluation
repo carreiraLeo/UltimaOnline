@@ -2,7 +2,7 @@ function Skill_ForensicEvaluation(){
 	Orion.CharPrint('self', '0x0035', 'Selecione o corpo');
 	Orion.WaitForAddObject(Orion.AddObject('corpo'));
 
-	while(Orion.SkillValue('Forensic Evaluation', 'real')<10000){
+	while(Orion.SkillValue('Forensic Evaluation', 'real')<1000){
 		Orion.ClearJournal();
 		Orion.UseSkill('Forensic Evaluation', 'corpo');
 		Orion.WaitJournal('Isto e|Voce nao', Orion.Now(), Orion.Now()+3000);
