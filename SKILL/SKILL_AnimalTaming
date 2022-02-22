@@ -1,4 +1,8 @@
 function SKILL_AnimalTaming(){
+	TextWindow.Clear();
+	TextWindow.Open();
+	TextWindow.Print('1 - Se fecha com o animal em um local onde você não o perde de vista.');
+	TextWindow.Print('2 - Seleciona ele como target, o script pega o ultima alvo.');
 	while(Orion.SkillValue('Animal Taming', 'real')<1000){
 		Orion.Say('All Release');
 		Orion.ClearJournal();
