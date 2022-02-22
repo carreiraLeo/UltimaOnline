@@ -1,0 +1,11 @@
+function SKILL_AnimalTaming(){
+	while(Orion.SkillValue('Animal Taming', 'real')<1000){
+		Orion.Say('All Release');
+		Orion.ClearJournal();
+		while(!Orion.InJournal('O animal aceitou')){
+			Orion.WaitTargetObject('lasttarget');
+			Orion.UseSkill('Animal Taming');
+			Orion.WaitJournal('O animal aceitou|Voce nao', Orion.Now(), Orion.Now()+30000);
+		}
+	}
+}
