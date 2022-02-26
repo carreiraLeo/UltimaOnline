@@ -1,0 +1,277 @@
+// ===========================================================================
+// Nome do Script:     				Fishing - Porto dos Milagres
+// Criado por:         				CorteX H.O
+// Adaptado para o Orion por: 			Serafina Pekkala (Carreira)
+// Aprimorado por:				Serafina Pekkala (Carreira)
+// ================================================== 
+// Versão:          		3.0 Version
+// Atualizada:			21/11/2021
+// Teste:            		1 Players 
+// Aprovado:        		100% 
+// Testado no:          	Ancorp Shard 
+// Bugs Encontrados:		0
+// ================================================== 
+// Versão 3.0
+// Otimização do script
+// ==================================================
+// LOGS:
+//  0.1 - Termino de Revisao e Melhoramento dos Macros.
+//  0.0.1 - Termino de Revisao correção de bugs
+// ===========================================================================
+// Creditos
+// 2.4.1 Bug no CheckIDs(). (Corrigido pelo ASTRO)
+// ===========================================================================
+
+//ATENÇÃO!!!
+// Configurações Inicias
+var rand=0; // 0 p/ navegar em retangulos, 1/ navegar aleatoriamente em 8 direções..
+var checkLag=0; // Se não tiver problema com a internet, deixa desligar (0), se tiver ocilando (1);
+var mov=7; // Quantidade a navegar na mesma direção.
+var cont = 0;
+var dir=Orion.Random(0,4); // Matenha o 0, apos a virgula colocar 4 a se rand=0, e 8 se rand=1.
+var tempMin=5500, tempMax=5501; //Tempo em ms de duração de cada viagem. O temMax tem ser pelo menos 1 a mais que o tempMin.
+var hatch='0x4013CA0F'; //ID ShipHatch
+var knife='0x4013CA0F'; //ID knife
+var bagFish='0x4013CA0F'; //ID bag Fish
+var bagMaps='0x4013CA0F'; //ID bag Maps
+var dropp = 1; //dropar os peixes comuns
+var cut = 0; // Cortar os peixes comuns: 0 = Não e 1 = Sim
+var nav = 1; // Navegar:  0 = Não e 1 = Sim
+var playNav = 0;// Iniciar Navegando: 0 = Não e 1 = Sim
+var maxweight = 400; // Peso total menos weight para guardar os peixes.
+// Configurações Inicias
+//ATENÇÃO!!!
+
+
+function Autostart(){
+    Orion.Wait(2500);
+	Orion.CharPrint(self, 906, 'Bom jogo!');
+	Orion.Wait(100);
+	Orion.Exec('StartFishing', true);
+	Orion.Wait(100);
+}
+
+function StartFishing(){
+	Orion.AddObject('ShipHatch', hatch);
+	Orion.UseObject('ShipHatch');
+	Orion.AddObject('Knife', knife);
+	Orion.AddObject('BagFish', bagFish); 
+	Orion.AddObject('BagMaps', bagMaps); 
+	CheckIDs();
+	while(!Player.Dead()){
+		if((nav==1) && (playNav==1)){
+			MoveShip();
+		    Fishing();
+		}else if((nav==1) && (playNav==0)){
+			Fishing();
+			MoveShip();
+		}else
+			Fishing();
+   }
+}
+
+function CheckIDs(){
+    var check=0;
+    var list = [
+        {id: hatch, name: 'Hatch'},
+        {id: knife, name: 'Knife'},
+        {id: bagFish, name: 'Bag Fish'},
+        {id: bagMaps, name: 'Bag Maps'},
+    ];
+    for(var i=0; i<list.length; i++){        
+        obj = Orion.FindObject(list[i].id)
+        if (obj){
+            Orion.CharPrint('self', '0x0044', list[i].name + ' OK');
+        }else{
+            check+=1;
+            Orion.CharPrint('self', '0x0035', list[i].name + ' OFF');
+        }        
+    }
+    if(check>0){
+        Orion.CharPrint('self', '0x0026', '!! Script Encerrado !!');
+        Orion.Terminate('StartFishing');            
+    }else{
+        Orion.CharPrint('self', '0x0044', 'Respeite o período da Piracema, na maioria do Brasil ocorre de 01/Nov até 28/Fev');    
+    }
+}
+
+function MoveShip(){
+ 	if(rand == 0){
+	    var MSG = [
+			'Forward',
+			'Left',
+			'Backward',
+			'Right',
+			'Stop',
+		];
+		
+	    Orion.ClearJournal();
+	    Orion.Say(MSG[dir]);
+	    Orion.Wait(Orion.Random(tempMin, tempMax));
+		if(Orion.InJournal('stopped|o barco parou|turbulent')){
+			if(dir==3)
+				dir=Orion.Random(0,3);
+			else
+				dir+=1;
+			return;
+		}
+	   Orion.Say(MSG[4]);
+	   Orion.Wait(200);
+	   cont += 1;
+	   if (cont == mov){
+	      cont = -1;
+	      dir += 1;
+	      if  (dir > 3)
+	         dir = -1;
+	   }
+	}else if(rand==1){
+		
+		var MSG = [
+			'Forward',
+			'Forward Left',
+			'Left',
+			'Backward Left',
+			'Backward',
+			'Backward Right',
+			'Right',
+			'Forward Left',
+			'Stop',
+		];
+		
+		Orion.ClearJournal();		
+		Orion.Say(MSG[dir]);
+		if(checkLag==1)
+			Orion.CheckLag(2000);
+	    Orion.Wait(Orion.Random(tempMin, tempMax));
+		if(Orion.InJournal('stopped|o barco parou|turbulent')){
+			dir = Orion.Random(0,8);
+			return;
+		}
+		Orion.Say(MSG[8]);
+	   	Orion.Wait(200);
+	   	cont += 1;
+	  	if (cont == mov){
+	    	cont = -1;
+	       	dir = Orion.Random(0,8);
+	   }
+	}else{
+		Orion.Say('Valor de rand diferente de 0 ou 1');
+		Orion.Say('Script Finalizado!!!');
+		Orion.Terminate('StartFishing');
+	}
+	Orion.Wait(2000);
+}
+
+function Fishing(){
+	for (var x=-4; x<=4; x++){
+		for (var y=-4; y<=4; y++){
+			if(checkLag==1)
+				Orion.CheckLag(10000);
+         	Orion.ClearJournal();
+         	//if(Orion.ValidateTargetTileRelative('water', x, y)){
+	         	Orion.Print("Pescando em: "+(Player.X()+x)+" "+(Player.Y()+y));
+	         	while (!Orion.InJournal('Nao ha|Tente')){
+	         		Orion.ClearJournal();
+					Orion.WaitTargetTile('0', (Player.X() + x), (Player.Y() + y), (Player.Z()));
+					Orion.UseType("0x0DBF|0x0DC0");  //FishingPole 
+					Orion.Wait(100);
+					while (!Orion.InJournal('Voce pescou|distante|Nao ha|Tente')){
+		               	Orion.WaitJournal('Voce pescou|distante|Nao ha|Tente|Voce pescou|nada de util|Wondrous|Truly|Highly|Prized|Message|Treasure|Mapa', Orion.Now(), (Orion.Now() + 14000), 'my|sys')            
+			            if (Orion.InJournal('Você perdeu|nada de util')){
+			            	Orion.ClearJournal();
+		    	            Orion.WaitTargetTile('0', (Player.X() + x), (Player.Y() + y), Player.Z());
+		        	        Orion.UseType("0x0DBF|0x0DC0");
+		               	}
+						if(Orion.InJournal('Voce pescou')){
+							if(Player.Weight() >= maxweight){
+								MoveToBag(1);
+							}
+						}
+						if (Orion.InJournal('Wondrous|Truly|Highly|Prized'))
+							MoveToBag(2);
+						if (Orion.InJournal("Message|Treasure|Mapa"))
+							MoveToBag(3);
+					}
+				}
+		//	}
+		}
+	}
+	
+}
+
+function MoveToBag(X){
+	if(checkLag==1)
+		Orion.CheckLag(10000);
+   var n, finditem, item = X;
+   var FISH = [
+		'0x09CC',
+		'0x09CD',
+		'0x09CE',
+		'0x09CF',
+	];
+   var MAP = [
+	   '0x099F',  //Message in a Bottle
+	   '0x14EB',  //Tattered Treasure Map
+	   '0x14ED', //Rolled Treasure Map
+   ];
+   var rareFishColor = '0x004C|0x0033|0x0056|0x0042';
+   //Fish = Item == 1
+   //Rare = Item == 2
+   //Map = Item == 3
+	if (item == 1){ // Fishs   
+	    if (cut == 1){  //Verifica se vai cortar ou n�o os  peixes
+			Orion.Equip('Knife');
+	        for (var n=0; n <4; n++){
+		    	while (Orion.Count(FISH[n], '0x0000', 'backpack')>=1){
+					finditem = Orion.FindType(FISH[n], '0x0000', backpack);
+			        Orion.WaitTargetObject(finditem[0]);
+			        Orion.UseObject('Knife');
+			        Orion.Wait(300);
+		        }
+			}
+       		for(i = 0; i < finditem.length; i++) {
+		       	while (Orion.Count('0x097A', 'any', 'backpack')>=1){  // Busca e move os fishsteaks      
+   			       	finditem = Orion.FindType('0x097A', 'any', 'backpack');
+		       		if(dropp==1)
+				    	Orion.DropHere(finditem[0], 0);    		
+	  		      	else
+	  		      		Orion.MoveItem(finditem[0], 0, 'ShipHatch');
+	  		      	Orion.Wait(300);
+	 		   }
+	        }
+	        Orion.Say('.disarm');
+		}
+		else{
+			for(var n=0; n<4; n++){
+				while (Orion.Count(FISH[n], '0x0000', 'backpack')>=1){    
+		       		finditem = Orion.FindType(FISH[n], '0x0000', 'backpack');
+		       		if(dropp==1)
+				    	Orion.DropHere(finditem[0], 0);   
+		       		else
+		       			Orion.MoveItem(finditem[0], 0, 'ShipHatch');
+		       		Orion.Wait(300);
+		       	}
+		 	}
+      	}    
+	}
+   	if (item == 2){ //Rare Fishs
+    	while (Orion.Count(FISH[0], rareFishColor, backpack) >= 1){
+            finditem = Orion.FindType(FISH[0], rareFishColor, backpack);
+            for(i = 0; i < finditem.length; i++) {
+  			     Orion.MoveItem(finditem[i], 0, 'BagFish');
+  			     Orion.Wait(300);
+	        } 
+      	}   
+   	}
+   	if (item == 3){ //Maps
+		for (var n=0; n<3; n++){
+        	while (Orion.Count(MAP[n]) >= 1){
+	            finditem = (Orion.FindType(MAP[n], '-1', backpack));
+	            Orion.MoveItem(finditem[0], 0, 'BagMaps');
+               	Orion.Wait(300);
+    	    }
+      	}   
+   	}
+	if(checkLag==1)
+		Orion.CheckLag(10000);
+}
