@@ -67,7 +67,7 @@ function StartMining(){
 		CheckDead();
 		CheckPickaxe(1);
 		CheckWeight();
-		if(Orion.ValidateTargetTileRelative('any', 0, 0)){
+		if(Orion.ValidateTargetTileRelative('cave', 0, 0)){
 				if(Orion.HaveTarget())
 					Orion.CancelWaitTarget();
 		}else
