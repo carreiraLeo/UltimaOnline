@@ -1,0 +1,12 @@
+function PoisonaArma() {
+	Orion.WarMode('off');
+	Orion.ClearJournal();
+	Orion.SetTimer('poisonWeapon');
+	Orion.CancelWaitTarget();
+	Orion.AddWaitTargetType('0x0F0E', '0x0044', 'self', 'fast');
+	Orion.UseSkill('Poisoning');
+	do {
+		Orion.Wait(10);
+	} while (!Orion.InJournal('Selecione') && Orion.Timer('poisonWeapon') < 800 );
+	Orion.WaitTargetObject('arma');
+}
