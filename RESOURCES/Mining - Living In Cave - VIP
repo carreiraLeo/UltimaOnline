@@ -1,0 +1,380 @@
+// ===========================================================================
+//											FAVOR MANTER OS CREDITOS
+// Nome do Script:  	Mining - Living In Cave 
+// Criado por:         	Serafina Pekkala (Carreira)
+// Aprimorado por: 	Serafina Pekkala (Carreira)
+// ================================================== 
+// Versão:		1.2 Version
+// Atualizada:		11/02/2022
+// Teste:           	1 Players 
+// Aprovado:          	100% 
+// Testado no:        	Ancorp Shard
+// Bugs Encontrados: 	0 
+// ================================================== 
+// Recomendo 2 bags no banco, 1 para os minerios e 1 para repor picaretas.
+// ** É necessario que as minas estejam em sequência e no mesmo runebook.
+// ** Se tiver apenas uma mina marcada no runebook, repetir posição nas variaveis runaCaveStart e runaCaveEnd.
+//	- Smaltando (É necessario deixar o hammer na bag)
+//	- Stealth (Porem no Ancorp é um pouco lento)
+// ================================================== 
+// 1.2
+//	- Ressando
+// ================================================== 
+// LOGS:
+// 0.1 - Melhoramento dos Macros.
+// 0.0.1 - Termino de Revisao e correção de bugs
+// ===========================================================================
+
+//ATENÇÃO!!!
+// Configurações Inicias
+var minaX=2570, minaY=481, minaZ=(0), casaX=2105, casaY=3007, casaZ=(30), forjaX=2518, forjaY=556, forjaZ=(0), ressX=1063, ressY=1431, ressZ=(-90); 
+var typeOres='0x19B9|0x19B8|0x19B7|0x19BA';
+var typeJoias='0x0F16|0x0E1F|0x0F26|0x14ED|0x3C2D|0x0F13|0x0F18|0x0F10|0x0F0F|0x0F11';
+var typeLingots='0x1BF2';
+var idRunebook='0402eb15f'; //ID runebook - Comando .mostraruid
+var runaCaveStart=2, // Numero da primeira runa da mina.
+var runaCaveEnd=5, // Numero da ultima runa da mina.
+var runaHome=10; // Numero da runa da casa/banco.
+var pickaxe='0x0E85', hammer='0x13E3'; // type da picareta e do martelo.
+var bauBS='0x40237239'; //ID bau de ingots/ores
+var bauJoias='0x40237239'; // ID bau de joias
+var bauPic='0x40237237'; //ID bau picareta
+var bauReg='0x40237237';//ID bau de reagents
+var local=2, // 0 p/ casa fora da mina, 1 p/ banco proximo a mina e 2 para recall.
+var onSmaltar=0; // 0 para guardar ores e 1 para guardar lingotes.
+var SmaltarCave=0; //0 para usar forja na mina e 1 para usar em casa.
+var hidd=0; // 0 = não fica em stealth, 1 = usa stealth.
+var guard=1; // 0 = não chama guards, 1 = chama guards.
+var maxWeight = (Player.MaxWeight()-(50)); //Peso Maximo - (Valor definido)
+// Fim das Configuraçõe Mining 
+//ATENÇÃO!!!
+
+function Autostart(){
+    Orion.Wait(2000);
+    Orion.CharPrint(self, 906, 'Bom jogo!');
+    Orion.Wait(100);
+    Orion.Exec('StartMining', true);
+	Orion.Wait(100);
+	 Orion.Exec('guards', true);
+	Orion.Wait(100);
+}
+
+function StartMining(){
+	Orion.AddObject('bauBS', bauBS);
+	Orion.AddObject('bauPic', bauPic);
+	Orion.AddObject('bauJoias', bauJoias);
+	while (true){
+		CheckDead();
+		CheckPickaxe(1);
+		CheckWeight();
+		if(Orion.ValidateTargetTileRelative('any', 0, 0)){
+				if(Orion.HaveTarget())
+					Orion.CancelWaitTarget();
+		}else
+			LocMov(1);
+		while(!Player.Dead()){
+			Move();
+			CheckWeight();
+			//CheckPickaxe(1);
+			Cave();
+		}
+	}
+}
+
+function guards(){
+	if(guard==1){
+		while(true){
+			if(Player.Hits()<Player.MaxHits()){
+				Orion.Say('Guards');
+				Orion.BandageSelf();
+				Orion.Wait(5000);
+			}
+		}
+	}
+}
+
+
+function Hidd(){
+	while(!Player.Hidden()){
+		if(!Player.Hidden()){
+	    	Move();
+	        if(Player.WarMode(1))
+				Orion.WarMode(0);
+	        Orion.UseSkill('Hiding');
+	        Orion.WaitJournal('Voce ficou|Voce nao|Skill Hiding', Orion.Now(), Orion.Now()+7000);
+	    }
+        if(Player.Hidden()){
+	        Orion.UseSkill('Stealth');
+	        Orion.WaitJournal('Voce nao|Voce comeca|invisivel|Skill Hiding', Orion.Now(), Orion.Now()+7000);
+	    }
+  	}	
+}
+
+function Move(){
+	Orion.WalkTo(Player.X()+Orion.Random(-5, 5), Player.Y()+Orion.Random(-5, 5),  Player.Z(), 0);
+	if(hidd==1){
+		if(Player.Hidden()){
+		        Orion.UseSkill('Stealth');
+		       Orion.WaitJournal('Voce nao|Voce comeca|invisivel|Skill Hiding', Orion.Now(), Orion.Now()+7000);
+		}
+	}
+}
+
+function Cave(){
+	for(var x=-1; x <= 1; x++){
+		for(var y=-1; y <= 1; y++){
+			if(hidd==1)
+	        	Hidd();
+			if(Orion.ValidateTargetTileRelative('any', x, y)) {
+				if(Orion.HaveTarget())
+					Orion.CancelWaitTarget();
+            }else{
+            	if(local==2)
+                	LocMov(1);
+                else
+            		Orion.WalkTo(minaX, minaY, minaZ, 0);
+            }
+			Orion.ClearJournal();
+			Orion.WaitTargetTileRelative('any', x, y, Player.Z());      
+			Orion.UseType(pickaxe);
+			Orion.WaitJournal('Nao ha|Voce pos|You cannot|Sua picareta|current state|a ghost|foi morto|Você coloca|Você colocou|Você não|Voce nao|Tente minerar|You cannot|You are|cadáver|Você cava|Não há|You put|You loosen|There is|You have|Try mining', Orion.Now(), (Orion.Now() + 14000), 'my|sys')
+			if(Orion.InJournal('current state|a ghost')){
+				Orion.Wait(500);
+				return;
+			}
+			Orion.Wait(50);
+		}
+	}
+}
+
+function CheckWeight(){
+	var weight=Player.Weight();
+	if(weight >= maxWeight){
+		if (local == 1)
+			LocMov(0);
+		else
+			LocMov(0);
+		if(onSmaltar==1)
+			smaltar();
+		OpenBank();
+		CheckReg();
+		Guardar();
+		LocMov(1);
+	}
+}
+
+function smaltar(){
+	if(SmaltarCave==1)
+		LocMov(0);
+	Orion.WalkTo(forjaX, forjaY, forjaZ, 0, 0, 1, 1);
+	while((Player.X()!=forjaX) && (Player.Y()!=forjaY)){
+		Orion.WalkTo(forjaX, forjaY, forjaZ, 0, 0, 1, 1);
+		Orion.Wait(1000);
+	}
+	while(Orion.Count(typeOres, 'any', backpack)>0){
+		Orion.UseType(hammer);
+		var ores = Orion.FindType(typeOres, 'any', backpack);
+		for (var i=0; i <= ores.length; i++){
+			Orion.UseObject(ores[i]);
+			Orion.Wait(50);
+		}
+	}
+	var gump0 = Orion.GetGump('last');
+	gump0.Select(Orion.CreateGumpHook(0));
+}
+
+function Guardar(){
+	if(onSmaltar==0){
+		while (Orion.Count(typeOres, 'any', backpack)>= 1){
+			var finditem = Orion.FindType(typeOres, 'any', backpack);
+			for(i = 0; i < finditem.length; i++) {
+			     Orion.MoveItem(finditem[i], 0, 'bauBS');
+			     Orion.Wait(500);
+	        } 
+	     	Orion.Wait(100);
+	     }
+	}else if(onSmaltar==1){
+		while (Orion.Count(typeLingots, 'any', backpack)>= 1){
+			var finditem = Orion.FindType(typeLingots, 'any', backpack);
+			for(i = 0; i < finditem.length; i++) {
+			     Orion.MoveItem(finditem[i], 0, 'bauBS');
+			     Orion.Wait(500);
+	        } 
+	     	Orion.Wait(100);
+	     }
+	}else{
+		Orion.CharPrint('self', '0x0035', 'Valor da variavel \"onSmaltar" não definida corretamente!');
+	}
+	while (Orion.Count(typeJoias, 'any', backpack)>= 1){
+		var finditem = Orion.FindType(typeJoias, 'any', backpack);
+		for(i = 0; i < finditem.length; i++) {
+		     Orion.MoveItem(finditem[i], 0, 'bauJoias');
+		     Orion.Wait(500);
+        } 
+     	Orion.Wait(100);
+     }
+	//CheckPickaxe(1);
+}
+
+function OpenBank(){
+	Orion.SetTimer('openBank');
+	Orion.ClearJournal();
+	var placa = Orion.FindType('0x0BD2', 'any', ground, 'fast ', 14);
+
+	if (placa.length) {
+		Orion.UseObject(placa);
+		Orion.WaitGump(Orion.CreateGumpHook(6));
+	} else {
+		Orion.Say('Banker Bank - Buy - Guards - Banco')
+	}
+
+	do {
+		Orion.Wait(10);
+	} while (!Orion.InJournal('Bank Box') && Orion.Timer('openBank') < 800 );
+
+	Orion.Boxhack(Player.BankSerial());
+}
+
+	
+
+function CheckPickaxe(x){
+	var qnt = x;
+	Orion.Disarm();
+	Orion.Wait(100);
+	var picks = Orion.FindType(pickaxe, 'any', backpack);
+	if(picks.length < qnt){
+		var x = (qnt - picks.length);
+		LocMov(0);
+		OpenBank();
+		Orion.UseObject('bauPic');
+		Orion.Wait(100);
+		var picks = Orion.FindType(pickaxe, 'any', 'bauPic');
+		if(picks.length){
+			for(var i=0; i<x; i++){
+				Orion.MoveItem(picks[i], x, backpack);
+				Orion.Wait(500);
+			}
+			Orion.UseType(pickaxe);
+			LocMov(1);
+		}else
+			Orion.Terminate('StartMining');
+	}
+	Orion.UseType(pickaxe);
+}
+
+
+function CheckDead(){
+	if(Player.Dead()){
+		Orion.WarMode('0');
+		while(Player.Dead()){
+			Orion.HelpGump();
+			Orion.WaitForGump(1000);
+			var gump0 = Orion.GetGump('last');
+			if ((gump0 !== null) && (!gump0.Replayed())){
+				gump0.Select(Orion.CreateGumpHook(1));
+				Orion.Wait(100);
+			}
+			var gump1 = Orion.GetGump('last');
+			if ((gump1 !== null) && (!gump1.Replayed())){
+				gump1.Select(Orion.CreateGumpHook(20));
+				Orion.Wait(100);
+			}
+			Orion.Wait(25000);	
+			gump0 = Orion.GetGump('last');
+			if ((gump0 !== null) && (!gump0.Replayed())){
+				gump0.Select(Orion.CreateGumpHook(1));
+				Orion.Wait(100);
+			}
+			Orion.Wait(8000);	
+		}		
+		Orion.WalkTo(5342, 1201, 23, 0);
+		//OpenBank();
+		//CheckReg();
+		while(Player.Mana()<Player.MaxMana()){
+				Orion.UseSkill('Meditation');
+				Orion.WaitJournal('peace|Você perdeu', Orion.Now(), (Orion.Now()+2000));
+			}
+			while((Player.X()!=casaX) && (Player.Y()!=casaY)){
+				if((Math.abs(Player.X()-casaX)>50) && (Math.abs(Player.Y()-casaY)>=50)){
+					Orion.Say('.recall ' + idRunebook + ',' + runaHome);
+					Orion.Wait(12000);
+				}else
+					Orion.WalkTo(casaX, casaY, casaZ, 0, 0, 1, 1);
+			}
+	}
+}
+
+function CheckReg(){
+	Orion.UseObject(bauReg);
+	Orion.Wait(500);
+	var regs = [
+            {id: '0', name: 'Blood Moss', type: '0x0F7B', qtd: '20'},
+            {id: '1', name: 'Black Pearls', type: '0x0F7A', qtd: '20'},
+            {id: '2', name: 'Mandrake Roots', type: '0x0F86', qtd: '20'},
+          ];
+
+	for(var i=0; i<3; i++){
+		if(Orion.Count(regs[i].type, 'any', 'backpack') < 20){
+			Orion.DragItem(Orion.FindType(regs[i].type, 'any', bauReg), 20-Orion.Count(regs[i].type, 'any', 'backpack'));
+			Orion.Wait('300');
+			Orion.DropDraggedItem('backpack');
+			Orion.Wait('500');			
+		}
+	}
+}
+
+function FindCave(){
+	while(!Orion.ValidateTargetTileRelative('cave', minaX, minaY)){
+		minaX = Orion.Random(-10, 10);
+		minaY = Orion.Random(-10, 10);
+		Orion.Wait(50);
+	}
+}
+
+function LocMov(x){
+	if(x==0){
+		if(local==0)
+			Orion.WalkTo(casaX, casaY, casaZ, 0, 0, 1, 1);
+		else if(local==1)
+			Orion.WalkTo(casaX, casaY, casaZ, 0, 0, 1, 1);
+		else if(local==2){
+			while(Player.Mana()<Player.MaxMana()){
+				Orion.UseSkill('Meditation');
+				Orion.WaitJournal('peace|Você perdeu', Orion.Now(), (Orion.Now()+2000));
+			}
+			while((Player.X()!=casaX) && (Player.Y()!=casaY)){
+				if((Math.abs(Player.X()-casaX)>10) && (Math.abs(Player.Y()-casaY)>=10)){
+					Orion.Say('.recall ' + idRunebook + ',' + runaHome);
+					Orion.Wait(12000);
+					Orion.UseType(pickaxe);
+					Orion.CancelTarget();
+				}else
+					Orion.WalkTo(casaX, casaY, casaZ, 0, 0, 1, 1);
+			}
+		}else
+			Orion.CharPrint('self', '0x0035', 'Valor da variavel \"local" não definida corretamente!');
+	}else{
+		if(local==0)
+			Orion.WalkTo(minaX, minaY, minaZ, 0);
+		else if(local==1)
+			Orion.WalkTo(minaX, minaY, minaZ, 0);
+		else if(local==2){
+			while(Player.Mana()<Player.MaxMana()){
+				Orion.UseSkill('Meditation');
+				Orion.WaitJournal('peace|Você perdeu', Orion.Now(), (Orion.Now()+2000));
+			}
+			while(!Orion.ValidateTargetTileRelative('cave', 0, 0)){
+				if(!Orion.ValidateTargetTileRelative('cave', 5, 5)){
+					Orion.Say('.recall ' + idRunebook + ',' + Orion.Random(runaCaveStart, runaCaveEnd+1));
+					Orion.Wait(12000);
+					Orion.UseType(pickaxe);
+					Orion.CancelTarget();
+				}else{
+					FindCave();
+					Orion.WalkTo(Player.X()+minaX, Player.Y()+minaY, 'any', 0);
+				}
+			}
+		}else
+			Orion.CharPrint('self', '0x0035', 'Valor da variavel \"local" não definida corretamente!');
+	}
+}
