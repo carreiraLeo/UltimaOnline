@@ -1,0 +1,4 @@
+function AllKill(){
+        Orion.WaitTargetObject(lasttarget);
+        Orion.Say('All Kill');
+}
