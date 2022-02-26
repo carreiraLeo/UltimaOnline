@@ -1,0 +1,35 @@
+function SetarArma(){
+    Orion.Print('-1', 'Selecione sua arma');
+    Orion.WaitForAddObject(Orion.AddObject('arma'));
+    Orion.Print('-1', 'Selecione seu escudo');
+    Orion.WaitForAddObject(Orion.AddObject('escudo'));
+}
+
+function Armar(){
+	Orion.UseType('0x1412|0x1419|0x140E');// Capacetes
+    if( !Orion.ObjAtLayer('arma') ){
+        if( !Orion.FindObject('arma') )
+            SetarArma();
+     	else{
+			if (!Orion.ObjAtLayer('RightHand') && !Orion.ObjAtLayer('LeftHand')){
+				var inimigo = Orion.FindObject('lasttarget');
+			  Orion.Attack('lasttarget');
+		    Orion.WaitTargetObject('lasttarget');
+				Orion.UseObject('arma');
+		    Orion.Wait(102);
+		    Orion.UseObject('escudo');
+			}
+			else{
+				Orion.WarMode(0);
+				Orion.Say('.disarm');
+				Orion.UseType('0x1549');
+				Orion.UseType('0x1547');
+				Orion.UseType('0x1545');
+				Orion.UseType('0x154A');
+				Orion.UseType('0x1546');
+			}
+    	}
+    }
+    else
+        Orion.Wait(02);
+}
