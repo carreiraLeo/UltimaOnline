@@ -1,0 +1,49 @@
+function SKILL_BS_Craft_Dagger(){
+	while(true){
+		var resource_bag = '0x40117A80'; //Bag com iron ingots
+		var dagger_bag = '0x40117A80' //Bag para colocar as dagger
+		var derreter=1; //0 Guardar no bau acima e 1 derrete
+		var qtd = 1; // Não alterar
+		Orion.Say("Iron Ingots: " + Orion.Count('0x1BF2', '0x0000', resource_bag));
+		Orion.Wait(200);
+		while(Orion.Count('0x0F51', 'any' ,'backpack')<qtd){
+			Orion.Print('Fabricando Dagger');	
+			Orion.ClearJournal();
+			if(Orion.Count('0x1BF2', '0x0000', 'backpack')>=3){
+				gump0 = Orion.GetGump('last');
+				if ((gump0 !== null) && (!gump0.Replayed())){
+					gump0.Select(Orion.CreateGumpHook(5008));
+					Orion.Wait(100);
+				}
+				Orion.WaitJournal('Voce pos|Voce falhou', Orion.Now(), Orion.Now()+5000);
+			}
+			else{	
+				if((1-Orion.Count('0x1BF2', '0x0000', 'backpack'))!=30){
+					Orion.DragItemType('0x1BF2', '0x0000', resource_bag, (30-Orion.Count('0x1BF2', '0x0000', 'backpack')));
+					Orion.Wait('300');
+					Orion.DropDraggedItem('backpack', 76, 98);
+					Orion.Wait('700');	
+				}
+			}
+		}
+		if(derreter==0){
+			while(Orion.Count('0x0F51', 'any', 'backpack')>0){
+				var dagger = Orion.FindType('0x0F51', 'any', 'backpack');
+				for(var i=0; i<dagger.length; i++){
+					Orion.MoveItem(dagger[i], 0, dagger_bag);
+					Orion.Wait('300');
+				}
+			}
+		}
+		else if(derreter==1){
+			gump = Orion.GetGump('last');
+			if ((gump !== null) && (!gump.Replayed())){
+				gump.Select(Orion.CreateGumpHook(5004));
+				Orion.Wait(500);
+			}
+			Orion.TargetType('0x0F51', '0xFFFF','backpack');
+			Orion.Wait(200);
+			Orion.UseType('0x13E3');
+		}
+	}
+}
