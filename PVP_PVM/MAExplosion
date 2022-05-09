@@ -1,5 +1,0 @@
-function Explosion(){
-	Orion.CancelWaitTarget();
-	Orion.WaitTargetType('0x0F0E', '0x0015');
-	Orion.Cast('Magic Arrow');
-}
